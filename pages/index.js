@@ -93,7 +93,47 @@ export default function Home() {
     const p = myVisitor.visitPattern(regExpAst)
     // console.log('myVisitor.x',myVisitor.x)
     // return myVisitor.x
-    return 'root = ' + r(p)
+
+    // an alternative that begins/ends with anchors it's a dependent match, otherwise it's an independent match
+    // this is a special case
+    // an pattern that DOES NOT begin/end with anchors is an independent match
+    // and needs to be wrapped appropriately
+
+    // the first disjunction node's value will contain one or more alternatives,
+    // which need to be flattened. If the first alternative is start anchor,
+    // then we don't add the !ind clause at start of peg. If the last
+    // alternative is end anchor, then we don't add !ind clause at end of peg.
+    // If both are missing, it's an independent match
+    
+    const arrOfAlternatives = p.value.value
+    console.log('arrOfAlternatives',arrOfAlternatives)
+
+    const flat = arrOfAlternatives.reduce((acc, curr) => {
+      console.log('arrOfAlternatives curr',curr)
+      console.log('arrOfAlternatives acc',acc)
+      return [ ...acc, curr ]
+    },[])
+    console.log('flat',flat)
+    console.log('flat.length - 1',flat.length - 1)
+    
+    let out = 'root = '
+    if (flat[0].type !== 'StartAnchor' || flat[flat.length - 1].type !== 'EndAnchor') {
+      // add ind match stuff at front of root rule
+      if (flat[0].type !== 'StartAnchor') {
+        out += '(!ind_match .)* ind_match'
+        arrOfAlternatives[0].value[0].type = 'StartAnchorProcessed'
+        console.log('start anchor processed:',p)
+      }
+      // add match stuff at end of root rule
+      if (flat[flat.length - 1].type !== 'EndAnchor') {
+        out += ' .*'
+        const lastAlt = arrOfAlternatives[arrOfAlternatives.length - 1]
+        const lastOfLastAlt = lastAlt.value[lastAlt.value.length - 1].type = "EndAnchorProcessed"
+        console.log('end anchor processed:',p)
+      }
+      out += '\nind_match = '
+    }
+    return out + r(p)
   }
 
   const renderQuantifier = (node, value) => {
@@ -116,9 +156,14 @@ export default function Home() {
     return ''
   }
 
+
   const r = (node, continuation = '') => {
     console.log(`r called for ${node?.type} with continuation: ${continuation} and node:`, node)
-    if (!node) return continuation
+
+    if (!node) {
+      return continuation
+    }
+
     switch (node.type) {
       case 'Pattern':
         return r(node.value, continuation)
@@ -137,11 +182,30 @@ export default function Home() {
         }).join(' / ')
 
       case 'Alternative': // concatenation
+
+        // an alternative that begins/ends with anchors is a dependent match
+        // an alternative that DOES NOT begin/end with anchors is an independent match
+        // in regex:
+        //   ^ can either be start of input or AFTER \n (without consuming anything)
+        //   $ can either be end of input or BEFORE \n (without consuming anything)
+        // a dependent match where the anchors represent start/end of input (rather than newline) translates fairly directly 
+        // e.g., /^abc$/ -> 'abc'
+        // converting an independenent match to a peg requires explicitly mentioning
+        // the delimiters, which in regex are implied to be anything other than the
+        // match itself. PEGs make this explicit
+        // 
+        //  Since pegs are multiline by default, $ needs to be converted to either match the end of the input OR a newline
+        //   which really just means putting \n? at the end of the root rule
+        // ^ becomes \n?
+        // $ becomes \n?
+        // LACK of ^ at start of input becomes a root delimiter root = (!ind_match .) rest (!ind_match .) 
+
         return node.value.reduce((acc, curr) => {
           console.log('alternative reducer acc:', acc)
           console.log('alternative reducer curr:', curr)
           return acc + r(curr, '')
         },'')
+
       case 'Character':
         // ast doesn't have a concept of string, so need to introduce that later so we arent just using chars
         const charValue = `'${r(undefined, String.fromCharCode(node.value))}'`
@@ -168,6 +232,15 @@ export default function Home() {
           return renderQuantifier(node, setValue)
         }
         return setValue
+      case 'StartAnchor':
+        return (node, `'\\n'? `)
+      case 'EndAnchor':
+        return (node, `'\\n'? `)
+      case 'StartAnchorProcessed':
+        return (undefined, '')
+      case 'EndAnchorProcessed':
+        return (undefined, '')
+
 
         // return ` ${charClass}${(node.quantifier) ? renderQuantifier(node) : ''} `
     }
