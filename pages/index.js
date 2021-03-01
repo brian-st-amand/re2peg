@@ -16,11 +16,9 @@ class MyRegExpVisitor extends BaseRegExpVisitor {
   }
 
   visitDisjunction(node) {
-    console.log('Disjunction', node)
   }
 
   visitAlternative(node) {
-    console.log('Alternative', node)
   }
 
   // Assertion
@@ -85,14 +83,10 @@ export default function Home() {
   const [peg, setPeg] = useState('');
 
   const re2peg = (re) => {
-    console.log('re:', re)
     const regexpParser = new RegExpParser()
     const regExpAst = regexpParser.pattern(re)
     const myVisitor = new MyRegExpVisitor()
-    console.log('myVisitor',myVisitor)
-    const p = myVisitor.visitPattern(regExpAst)
-    // console.log('myVisitor.x',myVisitor.x)
-    // return myVisitor.x
+    const pattern = myVisitor.visitPattern(regExpAst)
 
     // an alternative that begins/ends with anchors it's a dependent match, otherwise it's an independent match
     // this is a special case
@@ -104,36 +98,59 @@ export default function Home() {
     // then we don't add the !ind clause at start of peg. If the last
     // alternative is end anchor, then we don't add !ind clause at end of peg.
     // If both are missing, it's an independent match
-    
-    const arrOfAlternatives = p.value.value
-    console.log('arrOfAlternatives',arrOfAlternatives)
+
+      // an alternative that begins/ends with anchors is a dependent match
+      // an alternative that DOES NOT begin/end with anchors is an independent match
+      // in regex:
+      //   ^ can either be start of input or AFTER \n (without consuming anything)
+      //   $ can either be end of input or BEFORE \n (without consuming anything)
+      // a dependent match where the anchors represent start/end of input (rather than newline) translates fairly directly 
+      // e.g., /^abc$/ -> 'abc'
+      // converting an independenent match to a peg requires explicitly mentioning
+      // the delimiters, which in regex are implied to be anything other than the
+      // match itself. PEGs make this explicit
+      // 
+      //  Since pegs are multiline by default, $ needs to be converted to either match the end of the input OR a newline
+      //   which really just means putting \n? at the end of the root rule
+      // ^ becomes \n?
+      // $ becomes \n?
+      // LACK of ^ at start of input becomes a root delimiter root = (!ind_match .) rest (!ind_match .) 
+  
+    const arrOfAlternatives = pattern.value.value
 
     const flat = arrOfAlternatives.reduce((acc, curr) => {
-      console.log('arrOfAlternatives curr',curr)
-      console.log('arrOfAlternatives acc',acc)
       return [ ...acc, curr ]
     },[])
-    console.log('flat',flat)
-    console.log('flat.length - 1',flat.length - 1)
     
-    let out = 'root = '
-    if (flat[0].type !== 'StartAnchor' || flat[flat.length - 1].type !== 'EndAnchor') {
+    const rootRuleName = 'root'
+    let out = `${rootRuleName} = `
+    const firstType = flat[0].value[0].type
+    const lastType = flat[flat.length - 1].value[flat[flat.length - 1].value.length - 1].type
+
+    const hasIndependentMatch = !(firstType === 'StartAnchor' && lastType === 'EndAnchor')
+
+    const independentMatchRuleName = 'independent_match'
+
+    if (firstType === 'StartAnchor') {
+      arrOfAlternatives[0].value[0].type = 'StartAnchorDependentMatch'
+    } else {
       // add ind match stuff at front of root rule
-      if (flat[0].type !== 'StartAnchor') {
-        out += '(!ind_match .)* ind_match'
-        arrOfAlternatives[0].value[0].type = 'StartAnchorProcessed'
-        console.log('start anchor processed:',p)
-      }
-      // add match stuff at end of root rule
-      if (flat[flat.length - 1].type !== 'EndAnchor') {
-        out += ' .*'
-        const lastAlt = arrOfAlternatives[arrOfAlternatives.length - 1]
-        const lastOfLastAlt = lastAlt.value[lastAlt.value.length - 1].type = "EndAnchorProcessed"
-        console.log('end anchor processed:',p)
-      }
-      out += '\nind_match = '
+      out += `(!${independentMatchRuleName} .)*`
+      // arrOfAlternatives[0].value[0].type = 'StartAnchorIndependentMatch'
     }
-    return out + r(p)
+
+    if (hasIndependentMatch) out += ` ${independentMatchRuleName} `
+
+    if (lastType === 'EndAnchor') {
+      const lastAlt = arrOfAlternatives[arrOfAlternatives.length - 1]
+      lastAlt.value[lastAlt.value.length - 1].type = 'EndAnchorDependentMatch'
+    } else {
+      // add match stuff at end of root rule
+      out += ' .*'
+    }
+    // ind match rule needed
+    if (hasIndependentMatch) out += `\n${independentMatchRuleName} = `
+    return out + r(pattern)
   }
 
   const renderQuantifier = (node, value) => {
@@ -146,7 +163,6 @@ export default function Home() {
         newNode.quantifier.atLeast -= 1
         const oldNode = cloneDeep(node)
         delete oldNode.quantifier
-        console.log('node after delete quantifier:', oldNode)
         return `${r(oldNode, '')} ${r(newNode, '')}`
       }
       return `${value}{${node.quantifier.atLeast},${node.quantifier.atMost}}`
@@ -156,9 +172,8 @@ export default function Home() {
     return ''
   }
 
-
   const r = (node, continuation = '') => {
-    console.log(`r called for ${node?.type} with continuation: ${continuation} and node:`, node)
+    console.log(`TYPE: ${node?.type}\nCONT: ${continuation}\nNODE:`, node)
 
     if (!node) {
       return continuation
@@ -168,44 +183,47 @@ export default function Home() {
       case 'Pattern':
         return r(node.value, continuation)
       case 'Disjunction':
-        // can have 1 to n, need to group 
-        // this case is not really a disjunction just a concat 
+        // can have 1 to n children
+        // n=1 is not really a disjunction, it's a concat 
         if (node.value.length === 1) return r(node.value[0], continuation)
-
         const arr = [...node.value]
-        console.log('arr',arr)
+        // n>1
+        return arr.map((curr) => r(curr, '')).join(' / ')
+      case 'Alternative':
+        // Group > Disjunction > 2 or more operands
+        // Need to append the after-group continuation to each operand of the disjunction
+        // after-group continuation is r(node.value[1...n])
 
-        // for 2 or more its a reduction
-        return arr.map((curr) => {
-          console.log('disjunction map curr', curr)
-          return r(curr, '')
-        }).join(' / ')
+        // base case is DOES NOT have multiple children
+        const hasMultipleChildren = node.value.length > 1
+        const childGroup = node.value[0]
+        const isChildGroup = childGroup?.type === 'Group' 
+        const grandChildDisjunction = node.value[0].value
+        const isGrandchildDisjunction = grandChildDisjunction?.type === 'Disjunction' 
+        const disjunctionOperands = grandChildDisjunction?.value
+        const hasMultipleDisjunctionOperands = disjunctionOperands?.length > 1
+        if (hasMultipleChildren && isChildGroup && isGrandchildDisjunction && hasMultipleDisjunctionOperands) {
+          // for each element (alternative) in node.value[0].value, append everything else in node.value to node.value[0].value[i]
 
-      case 'Alternative': // concatenation
+          // save 2...n elements
+          let oldNodeValue = [...node.value]
+          oldNodeValue.shift()
 
-        // an alternative that begins/ends with anchors is a dependent match
-        // an alternative that DOES NOT begin/end with anchors is an independent match
-        // in regex:
-        //   ^ can either be start of input or AFTER \n (without consuming anything)
-        //   $ can either be end of input or BEFORE \n (without consuming anything)
-        // a dependent match where the anchors represent start/end of input (rather than newline) translates fairly directly 
-        // e.g., /^abc$/ -> 'abc'
-        // converting an independenent match to a peg requires explicitly mentioning
-        // the delimiters, which in regex are implied to be anything other than the
-        // match itself. PEGs make this explicit
-        // 
-        //  Since pegs are multiline by default, $ needs to be converted to either match the end of the input OR a newline
-        //   which really just means putting \n? at the end of the root rule
-        // ^ becomes \n?
-        // $ becomes \n?
-        // LACK of ^ at start of input becomes a root delimiter root = (!ind_match .) rest (!ind_match .) 
+          // xform ast so alternative has 1 child (just first child) deleting 2...n elements
+          node.value = [node.value[0]]
 
+          // iterate over the disjunction's array of alternatives, add cont to each alternative's value
+          // redistribute 2..n children among arms of the disjunction
+          grandChildDisjunction.value.forEach(altNode => altNode.value.push(...oldNodeValue))
+
+          // resubmit node for processing, now with only 1 child 
+          return r(node, continuation)
+        }
+
+        // this treats alternative as concat
         return node.value.reduce((acc, curr) => {
-          console.log('alternative reducer acc:', acc)
-          console.log('alternative reducer curr:', curr)
           return acc + r(curr, '')
         },'')
-
       case 'Character':
         // ast doesn't have a concept of string, so need to introduce that later so we arent just using chars
         const charValue = `'${r(undefined, String.fromCharCode(node.value))}'`
@@ -220,29 +238,27 @@ export default function Home() {
         }
         return groupValue
       case 'Set':
-        console.log('regex',regex)
         const charClass = regex.substring(node.loc.begin, node.loc.end)
-        console.log('charClass',charClass)
 
-        // renderQuantifier(node) : ''} `
-        // const value = ` ( ${r(node.value, continuation)} ) `
         const setValue = ` ${charClass} `
 
         if (node.quantifier) {
           return renderQuantifier(node, setValue)
         }
         return setValue
+      // anchors that aren't at the start/end of input match before or after the
+      // newline, but for pegs this is the same
       case 'StartAnchor':
         return (node, `'\\n'? `)
       case 'EndAnchor':
         return (node, `'\\n'? `)
-      case 'StartAnchorProcessed':
+      // anchors at the start/end of input are treated as a special case by regex semantics (dependent matches)
+      // they are deleted here because they have already been dealt with before
+      // this function was called, the node types marked as "Dependent Match"
+      case 'StartAnchorDependentMatch':
         return (undefined, '')
-      case 'EndAnchorProcessed':
+      case 'EndAnchorDependentMatch':
         return (undefined, '')
-
-
-        // return ` ${charClass}${(node.quantifier) ? renderQuantifier(node) : ''} `
     }
   }
 
