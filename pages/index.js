@@ -153,7 +153,8 @@ export default function Home() {
     return out + r(pattern)
   }
 
-  const renderQuantifier = (node, value) => {
+  const renderQuantifier = (node, value = '') => {
+    console.log('renderQuantifier node:',node)
     if (node.quantifier) {
       if (node.quantifier.atLeast === 0 && node.quantifier.atMost === Infinity) return `${value}*`
       if (node.quantifier.atLeast === 1 && node.quantifier.atMost === Infinity) return `${value}+`
@@ -166,8 +167,6 @@ export default function Home() {
         return `${r(oldNode, '')} ${r(newNode, '')}`
       }
       return `${value}{${node.quantifier.atLeast},${node.quantifier.atMost}}`
-    } else {
-      console.error('node doesn\'t have quantifier, quantifier fn called incorrectly')
     }
     return ''
   }
@@ -220,31 +219,61 @@ export default function Home() {
           return r(node, continuation)
         }
 
-        // this treats alternative as concat
-        return node.value.reduce((acc, curr) => {
-          return acc + r(curr, '')
-        },'')
+        // define character delimitors at the alternative level, not the character level
+        // if prev node isn't character or doesn't exist, insert ' delim
+        // if curr node is character and next node isn't character or doesn't exist, insert ' delim
+
+        const hasQuantifier = node => !!node.quantifier
+        const isCharNode = node => node.type === 'Character'
+
+        const isStartOfString = (curr, index, arr) => {
+          // to be the start of a string, it must be
+          // 1. a character node
+          if (!isCharNode(curr)) return false
+          // and one of:
+          // 2. start of array
+          if (index === 0) return true
+          // 3. the element behind it is not a character node
+          if (!isCharNode(arr[index-1])) return true
+          // otherwise, it's NOT the start of a string
+          return false
+        }
+
+        const isEndOfString = (curr, index, arr) => {
+          if (!isCharNode(curr)) return false
+          // to be the end of the string, it must be one of
+          // 1. a character node and the last element in the array
+          if (arr.length === index+1) return true
+          // 2. a character node with a quantifier is always also the end of a string
+          if (hasQuantifier(curr)) return true
+          // 3. a character node and the next node is NOT a character node
+          if (!isCharNode(arr[index+1])) return true
+          // otherwise, it's NOT the end of a string
+          return false
+        }
+
+        // TODO: characters with quantifiers are different, they need special case logic
+        let acc = ''
+        node.value.forEach((curr, index, arr) => {
+          acc += `${isStartOfString(curr, index, arr) ? `'` : ``}${r(curr, '')}${isEndOfString(curr, index, arr) ? `'` : ``}${renderQuantifier(curr)}`
+        })
+        return acc
       case 'Character':
         // ast doesn't have a concept of string, so need to introduce that later so we arent just using chars
-        const charValue = `'${r(undefined, String.fromCharCode(node.value))}'`
-        if (node.quantifier) {
-          return renderQuantifier(node, charValue)
-        }
+        // const charValue = `'${r(undefined, String.fromCharCode(node.value))}'`
+        const charValue = `${r(undefined, String.fromCharCode(node.value))}`
         return charValue
       case 'Group':
         const groupValue = ` ( ${r(node.value, continuation)} ) `
-        if (node.quantifier) {
-          return renderQuantifier(node, groupValue)
-        }
         return groupValue
       case 'Set':
         const charClass = regex.substring(node.loc.begin, node.loc.end)
 
         const setValue = ` ${charClass} `
 
-        if (node.quantifier) {
-          return renderQuantifier(node, setValue)
-        }
+        // if (node.quantifier) {
+        //   return renderQuantifier(node, setValue)
+        // }
         return setValue
       // anchors that aren't at the start/end of input match before or after the
       // newline, but for pegs this is the same
