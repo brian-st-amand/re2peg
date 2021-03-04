@@ -44,7 +44,7 @@ PEGs:
 
 <p>A <a href="https://pegjs.org/online">2009 paper</a> detailed an algorithm for converting Regexes to PEGs. Some of this application made use of this paper.</p>
 
-<p>The <a href="https://pegjs.org/online">the original PEG paper</a> from Brian Ford is a great read that explains all the details about PEGs.</p>
+<p>The <a href="https://pegjs.org/online">original PEG paper</a> from Brian Ford is a great read that explains all the details about PEGs.</p>
 
 <h6>
 Cool PEG stuff

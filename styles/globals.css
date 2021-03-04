@@ -22,3 +22,7 @@ a {
 .description {
   font-size: 14px;
 }
+
+p a {
+  text-decoration: underline;
+}
