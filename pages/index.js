@@ -5,6 +5,7 @@ import { Modal, Button } from 'react-bootstrap';
 import Examples from './examples';
 import Info from './info';
 import Help from './help';
+import Concept from './concept';
 import { re2peg } from '../re2peg';
 
 export default function Home() {
@@ -76,6 +77,13 @@ export default function Home() {
       <footer className={`${styles.footer}`}>
 
         <Button variant="btn-link" onClick={() => {
+          setModalContent({title:'PEGs: Better than Regex',body:<Concept/>}); 
+          handleShow();
+        }}>
+          Concept
+        </Button>
+
+        <Button variant="btn-link" onClick={() => {
           setModalContent({title:'Examples',body:<Examples useExample={useExample}/>}); 
           handleShow();
         }}>
@@ -95,7 +103,6 @@ export default function Home() {
         }}>
           Help
         </Button>
-
 
         <Button variant="btn-link">
           <a href="https://github.com/brian-st-amand/re2peg" variant="btn-link">
