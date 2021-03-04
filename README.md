@@ -10,8 +10,14 @@ All major languages have their own PEG implementations. The grammar will be iden
 
 https://re2peg.vercel.app/
 
-#TODO
+# TODO
 * Add more tests
 * Improve error handling UX
+* Refactor conversion algo to be cleaner and easier to read
+* Improve docs/help
+* Add PEG tester and/or regex testers to this site (instead of linking out)
+
+# WISH LIST
 * This uses the ECMAScript Regex engine, I would also like to support PCRE
+* a PEG analyzer that gives you the time/space estimates for your PEG for different likely inputs
 * Add interactive PEG editing features to demonstrate how to add rules/complexity to your PEG
