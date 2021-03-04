@@ -26,3 +26,7 @@ a {
 p a {
   text-decoration: underline;
 }
+
+li a {
+  text-decoration: underline;
+}
