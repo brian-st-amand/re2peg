@@ -6,6 +6,6 @@ As your grammar grows in length, move segments into new rules. You can create as
 
 Test your PEG (using JavaScript) here: https://pegjs.org/online
 
-All major languages have their own PEG implementations. The grammar will be identical to the one seen here, but sometimes the delimitors for characters/strings will vary.
+All major languages have their own PEG implementations. The grammar will be identical to the one seen here, but sometimes the delimiters for characters/strings will vary.
 
 https://re2peg.vercel.app/
