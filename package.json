@@ -12,6 +12,7 @@
     "clone-deep": "^4.0.1",
     "next": "10.0.7",
     "react": "17.0.1",
+    "react-bootstrap": "^1.5.1",
     "react-dom": "17.0.1",
     "regexp-to-ast": "^0.5.0"
   }
