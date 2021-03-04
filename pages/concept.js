@@ -34,6 +34,11 @@ Complex regexes:
 
 <p>The <a href="https://pegjs.org/online">the original PEG paper</a> from Brian Ford is a great read that explains all the details about PEGs.</p>
 
+<h6>
+Cool PEG stuff
+</h6>
+<li>replace grep on your CLI with <a href="https://github.com/GlenHertz/peg">peg CLI tool</a></li>
+
         </Col>
       </Row>
     </Container>
