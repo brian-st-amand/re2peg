@@ -25,22 +25,22 @@ class MyRegExpVisitor extends BaseRegExpVisitor {
     // alternative is end anchor, then we don't add !ind clause at end of peg.
     // If both are missing, it's an independent match
 
-      // an alternative that begins/ends with anchors is a dependent match
-      // an alternative that DOES NOT begin/end with anchors is an independent match
-      // in regex:
-      //   ^ can either be start of input or AFTER \n (without consuming anything)
-      //   $ can either be end of input or BEFORE \n (without consuming anything)
-      // a dependent match where the anchors represent start/end of input (rather than newline) translates fairly directly 
-      // e.g., /^abc$/ -> 'abc'
-      // converting an independenent match to a peg requires explicitly mentioning
-      // the delimiters, which in regex are implied to be anything other than the
-      // match itself. PEGs make this explicit
-      // 
-      //  Since pegs are multiline by default, $ needs to be converted to either match the end of the input OR a newline
-      //   which really just means putting \n? at the end of the root rule
-      // ^ becomes \n?
-      // $ becomes \n?
-      // LACK of ^ at start of input becomes a root delimiter root = (!ind_match .) rest (!ind_match .) 
+    // an alternative that begins/ends with anchors is a dependent match
+    // an alternative that DOES NOT begin/end with anchors is an independent match
+    // in regex:
+    //   ^ can either be start of input or AFTER \n (without consuming anything)
+    //   $ can either be end of input or BEFORE \n (without consuming anything)
+    // a dependent match where the anchors represent start/end of input (rather than newline) translates fairly directly 
+    // e.g., /^abc$/ -> 'abc'
+    // converting an independenent match to a peg requires explicitly mentioning
+    // the delimiters, which in regex are implied to be anything other than the
+    // match itself. PEGs make this explicit
+    // 
+    //  Since pegs are multiline by default, $ needs to be converted to either match the end of the input OR a newline
+    //   which really just means putting \n? at the end of the root rule
+    // ^ becomes \n?
+    // $ becomes \n?
+    // LACK of ^ at start of input becomes a root delimiter root = (!ind_match .) rest (!ind_match .) 
   
     const arrOfAlternatives = pattern.value.value
 
@@ -192,7 +192,6 @@ class MyRegExpVisitor extends BaseRegExpVisitor {
           return false
         }
 
-        // TODO: characters with quantifiers are different, they need special case logic
         let acc = ''
         node.value.forEach((curr, index, arr) => {
           acc += `${isStartOfString(curr, index, arr) ? `'` : ``}${r(curr, '')}${isEndOfString(curr, index, arr) ? `'` : ``}${renderQuantifier(curr)}`
@@ -208,12 +207,7 @@ class MyRegExpVisitor extends BaseRegExpVisitor {
         return groupValue
       case 'Set':
         const charClass = regex.substring(node.loc.begin, node.loc.end)
-
         const setValue = ` ${charClass} `
-
-        // if (node.quantifier) {
-        //   return renderQuantifier(node, setValue)
-        // }
         return setValue
       // anchors that aren't at the start/end of input match before or after the
       // newline, but for pegs this is the same
