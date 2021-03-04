@@ -17,7 +17,7 @@ export default function Help(props) {
             Test your PEG (using JavaScript) here: <a href="https://pegjs.org/online">https://pegjs.org/online</a>
           </p>
           <p>
-            All major languages have their own PEG implementations. The grammar will be identical to the one seen here, but sometimes the delimitors for characters/strings will vary.
+            All major languages have their own PEG implementations. The grammar will be identical to the one seen here, but sometimes the delimiters for characters/strings will vary.
           </p>
         </Col>
         <Col className="col-5"> </Col>

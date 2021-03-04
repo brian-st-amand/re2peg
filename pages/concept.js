@@ -19,12 +19,12 @@ export default function Concept(props) {
 
 <p>
 Complex regexes:
-* Hide subtle bugs that sometimes are never found for years
-* Difficult to modify without introducing new bugs
-* Difficult to add functionality to without an exponential increase in complexity
-* Require substantial testing
-* Threaten to destroy the performance of your application if you use advanced features
-* Vary greatly between implementations due to their origin in ambiguous grammars
+  <li>Hide subtle bugs that sometimes are never found for years</li>
+  <li>Difficult to modify without introducing new bugs</li>
+  <li>Difficult to add functionality to without an exponential increase in complexity</li>
+  <li>Require substantial testing</li>
+  <li>Threaten to destroy the performance of your application if you use advanced features</li>
+  <li>Vary greatly between implementations due to their origin in ambiguous grammars</li>
 </p>
 
 <p>Having said that, while PEGs guarantee linear time complexity, since they rely on memoization they can be memory inefficient in the worst case. Before using PEGs in production at scale in something like an HTTP server, this limitation would need to be thoroughly evaluated. PEGs are still a novel technology and should not be blindly adopted.</p>
