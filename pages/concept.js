@@ -27,7 +27,7 @@ Complex regexes:
   <li>Vary greatly between implementations due to their origin in ambiguous grammars</li>
 </p>
 
-<p>Having said that, while PEGs guarantee linear time complexity, since they rely on memoization they can be memory inefficient in the worst case. Before using PEGs in production at scale in something like an HTTP server, this limitation would need to be thoroughly evaluated. PEGs are still a novel technology and should not be blindly adopted.</p>
+<p>Having said that, while PEGs guarantee linear time complexity, since they rely on memoization they can be memory inefficient in the worst case (memory usage is proportional to the nesting depth of the input string). Before using PEGs in production at scale in something like an HTTP server, this limitation would need to be thoroughly evaluated. PEGs are still a novel technology and should not be blindly adopted.</p>
 <p>This regex to PEG converter (re2peg) allows developers to take a regex and see what it looks like as a PEG. This is primarily meant as a learning tool to accelerate and encourage adoption of PEGs, and to learn about the concept for fun.</p>
 
 <p>A <a href="https://pegjs.org/online">2009 paper</a> detailed an algorithm for converting Regexes to PEGs. Some of this application made use of this paper.</p>
