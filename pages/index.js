@@ -98,7 +98,7 @@ export default function Home() {
 
 
         <Button variant="btn-link">
-          <a href="https://github.com" variant="btn-link">
+          <a href="https://github.com/brian-st-amand/re2peg" variant="btn-link">
             Source
           </a>
           <style jsx>{`
