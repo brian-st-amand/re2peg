@@ -1,5 +1,5 @@
-import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import React from 'react'
+import { Container, Row, Col } from 'react-bootstrap'
 
 const examples = [
   { title: 'independent_match', regex: '/abc/' },
@@ -10,7 +10,7 @@ const examples = [
   { title: 'repetition - 0 or 1', regex: '/a?/' },
   { title: 'group repetition', regex: '/(abc)+/' },
   { title: 'character class', regex: '/[0-9]/' },
-];
+]
 
 export default function Examples(props) {
   return (
@@ -56,5 +56,5 @@ export default function Examples(props) {
         </Row>
       ))}
     </Container>
-  );
+  )
 }
