@@ -1,16 +1,16 @@
-import React from 'react'
-import { Container, Row, Col } from 'react-bootstrap'
+import React from 'react';
+import { Container, Row, Col } from 'react-bootstrap';
 
 const examples = [
-  {title: 'independent_match', regex: '/abc/'},
-  {title: 'dependent_match', regex: '/^abc$/'},
-  {title: 'choice', regex: '/(a|ab)c/'},
-  {title: 'repetition - 0 to inf', regex: '/a*/'},
-  {title: 'repetition - 1 to inf', regex: '/a+/'},
-  {title: 'repetition - 0 or 1', regex: '/a?/'},
-  {title: 'group repetition', regex: '/(abc)+/'},
-  {title: 'character class', regex: '/[0-9]/'}
-]
+  { title: 'independent_match', regex: '/abc/' },
+  { title: 'dependent_match', regex: '/^abc$/' },
+  { title: 'choice', regex: '/(a|ab)c/' },
+  { title: 'repetition - 0 to inf', regex: '/a*/' },
+  { title: 'repetition - 1 to inf', regex: '/a+/' },
+  { title: 'repetition - 0 or 1', regex: '/a?/' },
+  { title: 'group repetition', regex: '/(abc)+/' },
+  { title: 'character class', regex: '/[0-9]/' },
+];
 
 export default function Examples(props) {
   return (
@@ -19,7 +19,7 @@ export default function Examples(props) {
         <Col className="col-4">name</Col>
         <Col className="col-8">regex</Col>
       </Row>
-      {examples.map(e => (
+      {examples.map((e) => (
         <Row className="mx-1" key={e.title}>
           <Col className="col-4">{e.title}</Col>
           <Col className="col-8">
@@ -30,17 +30,25 @@ export default function Examples(props) {
                 </div>
               </form>
               <div className="">
-                <button className="btn btn-dark" type="button" id="copy-button"
-                    data-toggle="tooltip" data-placement="button"
-                    title="Use Regex" onClick={() => props.useExample(e.regex)}>
+                <button
+                  className="btn btn-dark"
+                  type="button"
+                  id="copy-button"
+                  data-toggle="tooltip"
+                  data-placement="button"
+                  title="Use Regex"
+                  onClick={() => props.useExample(e.regex)}
+                >
                   Try it
-                    <style jsx>{`
+                  <style jsx>
+                    {`
                       .btn {
                         line-height: 16px;
                         font-size: 14px;
                         margin-left: 10px;
                       }
-                    `}</style>
+                    `}
+                  </style>
                 </button>
               </div>
             </div>
@@ -48,5 +56,5 @@ export default function Examples(props) {
         </Row>
       ))}
     </Container>
-  )
+  );
 }

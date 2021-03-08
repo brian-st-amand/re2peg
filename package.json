@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "lint": "eslint --fix .",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
+    "clean": "git clean -fXd -e \\!node_modules -e \\!node_modules/**/*",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
@@ -15,5 +18,20 @@
     "react-bootstrap": "^1.5.1",
     "react-dom": "17.0.1",
     "regexp-to-ast": "^0.5.0"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.13.8",
+    "@babel/eslint-plugin": "^7.13.0",
+    "eslint": "^7.21.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-plugin-unicorn": "^28.0.2",
+    "prettier": "^2.2.1",
+    "prettier-eslint": "^12.0.0"
   }
 }
