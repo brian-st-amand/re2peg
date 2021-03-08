@@ -151,7 +151,7 @@ class MyRegExpVisitor extends BaseRegExpVisitor {
             return inner(node, continuation)
             }
 
-            // define character delimitors at the alternative (or parent?) level, not the character level
+            // define character delimiters at the alternative (or parent?) level, not the character level
             // if prev node isn't character or doesn't exist, insert ' delim
             // if curr node is character and next node isn't character or doesn't exist, insert ' delim
 
