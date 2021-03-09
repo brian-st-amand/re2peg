@@ -2,7 +2,6 @@
   "name": "re2peg",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "lint": "eslint --fix .",
     "clean": "git clean -fXd -e \\!node_modules -e \\!node_modules/**/*",
