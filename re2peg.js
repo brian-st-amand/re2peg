@@ -3,7 +3,7 @@ import cloneDeep from 'clone-deep'
 
 class MyRegExpVisitor extends BaseRegExpVisitor {
   visitPattern(node) {
-    console.log('Pattern', node)
+    // console.log('Pattern', node)
     return node
   }
 }
@@ -76,11 +76,13 @@ export const re2peg = (regex) => {
   }
   // ind match rule needed
   if (hasIndependentMatch) out += `\n${independentMatchRuleName} = `
-  return out + outer(pattern, '', regex)
+  return cleanupString(out + outer(pattern, '', regex))
 }
 
+const cleanupString = (str) => str.replace(/ +/g, ' ').trim()
+
 export const renderQuantifier = (node, value = '') => {
-  console.log('renderQuantifier node:', node)
+  // console.log('renderQuantifier node:', node)
   if (node.quantifier) {
     if (node.quantifier.atLeast === 0 && node.quantifier.atMost === Infinity)
       return `${value}*`
@@ -107,7 +109,7 @@ export const renderQuantifier = (node, value = '') => {
 
 export const outer = (node, continuation = '', regex) => {
   const inner = (node, continuation = '') => {
-    console.log(`TYPE: ${node?.type}\nCONT: ${continuation}\nNODE:`, node)
+    // console.log(`TYPE: ${node?.type}\nCONT: ${continuation}\nNODE:`, node)
 
     if (!node) {
       return continuation
