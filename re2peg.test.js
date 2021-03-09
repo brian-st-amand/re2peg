@@ -92,4 +92,11 @@ describe('re2peg by peg functionality', () => {
     expect(() => parser.parse('zzzabczzz')).toThrow()
   })
 
+  test('choice', () => {
+    const parser = peg.generate(re2peg('/(a|ab)c/'))
+    const actual = parser.parse('abc')[1]
+    const expected = 'abc'
+    expect(actual).toEqual(expected)
+  })
+
 })
