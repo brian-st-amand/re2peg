@@ -126,41 +126,50 @@ export const outer = (node, continuation = '', regex) => {
         // n>1
         return arr.map((curr) => inner(curr, '')).join(' / ')
       case 'Alternative':
-        // Group > Disjunction > 2 or more operands
-        // Need to append the after-group continuation to each operand of the disjunction
+        // Find first group node under the alternative that meets criteria:
+        //   Group > Disjunction > 2 or more operands
+        // append the after-group continuation to each operand of the disjunction
         // after-group continuation is r(node.value[1...n])
+        // resubmit for processing
 
-        // base case is DOES NOT have multiple children
-        const hasMultipleChildren = node.value.length > 1
-        const childGroup = node.value[0]
-        const isChildGroup = childGroup?.type === 'Group'
-        const grandChildDisjunction = node.value[0].value
-        const isGrandchildDisjunction =
-          grandChildDisjunction?.type === 'Disjunction'
-        const disjunctionOperands = grandChildDisjunction?.value
-        const hasMultipleDisjunctionOperands = disjunctionOperands?.length > 1
-        if (
-          hasMultipleChildren &&
-          isChildGroup &&
-          isGrandchildDisjunction &&
-          hasMultipleDisjunctionOperands
-        ) {
-          // for each element (alternative) in node.value[0].value, append everything else in node.value to node.value[0].value[i]
+        const get1stTransformableGroupIndex = () => {
+          // checking against node.value.length - 1 because if group is last node, then it's not xformable
+          // we intentionally skip checking the last node in the array, since
+          // the last node in the array is never xformable
+          for (let i = 0; i < node.value.length - 1; i++) {
+            const childGroup = node.value[i]
+            const isChildGroup = childGroup?.type === 'Group'
+            const grandChildDisjunction = node.value[i].value
+            const isGrandchildDisjunction = grandChildDisjunction?.type === 'Disjunction'
+            const disjunctionOperands = grandChildDisjunction?.value
+            const hasMultipleDisjunctionOperands = disjunctionOperands?.length > 1
+            if (isChildGroup && isGrandchildDisjunction && hasMultipleDisjunctionOperands) return i
+          }
 
-          // save 2...n elements
-          const oldNodeValue = [...node.value]
-          oldNodeValue.shift()
+          return -1
+        }
 
-          // xform ast so alternative has 1 child (just first child) deleting 2...n elements
-          node.value = [node.value[0]]
+        // TODO: change this away from mutating node
+        const distributeContinuationIntoGroupWithIndex = groupIndex => {
+          // append every element from groupIndex..n in the alternative node to
+          // the xformable group, then delete those elements from the
+          // alternative node
 
+          const deleted = cloneDeep(node.value.splice(groupIndex + 1, node.value.length - groupIndex + 1))
           // iterate over the disjunction's array of alternatives, add cont to each alternative's value
-          // redistribute 2..n children among arms of the disjunction
-          grandChildDisjunction.value.forEach((altNode) =>
-            altNode.value.push(...oldNodeValue),
+          // redistribute groupIndex..n children among arms of the disjunction
+          node.value[groupIndex].value.value.forEach((altNode) => {
+              altNode.value.push(...cloneDeep(deleted))
+            }
           )
 
-          // resubmit node for processing, now with only 1 child
+        }
+
+        const firstTransformableGroupIndex = get1stTransformableGroupIndex()
+
+        if (firstTransformableGroupIndex >= 0) {
+          distributeContinuationIntoGroupWithIndex(firstTransformableGroupIndex)
+          // resubmit node for processing, now post-group elements folded into the first group
           return inner(node, continuation)
         }
 
