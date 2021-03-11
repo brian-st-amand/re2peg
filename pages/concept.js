@@ -126,6 +126,9 @@ export default function Concept(props) {
             replace grep on your CLI with
             <a href="https://github.com/GlenHertz/peg">peg CLI tool</a>
           </li>
+          <li>
+            <a href="http://www.lua.inf.puc-rio.br/publications/medeiros11regular.pdf">converting regexes to pegs </a>
+          </li>
         </Col>
       </Row>
     </Container>
